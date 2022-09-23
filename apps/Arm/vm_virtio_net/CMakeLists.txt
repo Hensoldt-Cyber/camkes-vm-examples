@@ -73,10 +73,6 @@ UpdateDtbFromInitrd(
     rootfs_target
 )
 
-AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS dtb_gen_target)
-AddToFileServer("linux-initrd" ${output_overlayed_rootfs_location} DEPENDS rootfs_target)
-AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux")
-
 AddCamkesCPPFlag(
     cpp_flags
     CONFIG_VARS
@@ -87,7 +83,16 @@ AddCamkesCPPFlag(
     VmVirtioNetVirtqueue
 )
 
-DefineCAmkESVMFileServer()
+DefineCAmkESVMFileServer(
+    FILES
+        "linux:${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux"
+        "linux-initrd:${output_overlayed_rootfs_location}"
+        "linux-dtb:${output_dtb_location}"
+    DEPENDS
+        rootfs_target
+        target_dtb_gen
+)
+
 
 CAmkESAddImportPath(${KernelARMPlatform})
 
