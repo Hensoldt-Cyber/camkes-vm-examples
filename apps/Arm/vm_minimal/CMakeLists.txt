@@ -35,7 +35,8 @@ if("${KernelARMPlatform}" STREQUAL "tk1")
     set(output_dtb_location "${CMAKE_CURRENT_BINARY_DIR}/linux/linux-dtb")
     add_custom_command(
         OUTPUT "${output_dtb_location}"
-        COMMAND bash -c "which dtc && dtc -I dts -O dtb ${device_tree_src} > ${output_dtb_location}"
+        COMMAND
+            dtc -I dts -O dtb -o ${output_dtb_location} ${device_tree_src}
         VERBATIM
         DEPENDS ${device_tree_src}
     )
