@@ -37,8 +37,6 @@ elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
     endif()
 endif()
 
-AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux")
-
 if(BUILD_CROSSVM)
     set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/rootfs.cpio.gz")
     # Checkout and configure linux to build crossvm module
@@ -205,7 +203,6 @@ AddOverlayDirToRootfs(
     rootfs_target
     GZIP
 )
-AddToFileServer("linux-initrd" ${output_overlayed_rootfs_location} DEPENDS rootfs_target)
 
 AddCamkesCPPFlag(
     cpp_flags
@@ -218,7 +215,13 @@ AddCamkesCPPFlag(
     VmVirtioNetVirtqueue
 )
 
-DefineCAmkESVMFileServer()
+DefineCAmkESVMFileServer(
+    FILES
+    "linux:${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux"
+    "linux-initrd:${output_overlayed_rootfs_location}"
+    DEPENDS
+    rootfs_target
+)
 
 CAmkESAddImportPath(${KernelARMPlatform})
 

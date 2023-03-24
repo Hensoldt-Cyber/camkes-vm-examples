@@ -16,7 +16,6 @@ include(${CAMKES_VM_LINUX_HELPERS_PATH})
 # Create our CPP Flags based on ARM VM config variables
 set(cpp_flags "-DKERNELARMPLATFORM_EXYNOS5422")
 
-AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/exynos5422/linux")
 # Generate overlayed rootfs
 set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/exynos5422/rootfs.cpio.gz")
 AddFileToOverlayDir(
@@ -35,7 +34,7 @@ AddOverlayDirToRootfs(
     rootfs_target
     GZIP
 )
-AddToFileServer("linux-initrd" ${output_overlayed_rootfs_location} DEPENDS rootfs_target)
+
 # Updated dtb based on generated initrd
 UpdateDtbFromInitrd(
     "${CAMKES_VM_IMAGES_DIR}/exynos5422/linux-dtb-virtcon"
@@ -46,11 +45,18 @@ UpdateDtbFromInitrd(
     DEPENDS
     rootfs_target
 )
-AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS dtb_gen_target)
 
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB Tk1DeviceFwd Tk1Insecure)
 
-DefineCAmkESVMFileServer()
+DefineCAmkESVMFileServer(
+    FILES
+    "linux:${CAMKES_VM_IMAGES_DIR}/exynos5422/linux"
+    "linux-initrd:${output_overlayed_rootfs_location}"
+    "linux-dtb:${output_dtb_location}"
+    DEPENDS
+    rootfs_target
+    dtb_gen_target
+)
 
 CAmkESAddImportPath(exynos5422)
 

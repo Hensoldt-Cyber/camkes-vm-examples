@@ -10,6 +10,10 @@ project(camkes-arm-tk1-vm C)
 
 include(${CAMKES_ARM_VM_HELPERS_PATH})
 
+# On some platforms, there is no dedicated rootfs, because it's part of the
+# Linux kernel image.
+set(rootfs_file "")
+
 # Create our CPP Flags based on ARM VM config variables
 if("${KernelARMPlatform}" STREQUAL "tk1")
     set(cpp_flags "-DKERNELARMPLATFORM_TK1")
@@ -21,10 +25,11 @@ if("${KernelARMPlatform}" STREQUAL "tk1")
         set(device_tree_src "${CAMKES_ARM_LINUX_DIR}/linux-tk1-secure.dts")
     endif()
 
+    # kernel image contains rootfs
     if(VmTk1InitrdRootfs)
-        set(linux_binary_name "${CAMKES_ARM_LINUX_DIR}/linux-tk1-initrd")
+        set(linux_image "${CAMKES_ARM_LINUX_DIR}/linux-tk1-initrd")
     else()
-        set(linux_binary_name "${CAMKES_ARM_LINUX_DIR}/linux-tk1-debian")
+        set(linux_image "${CAMKES_ARM_LINUX_DIR}/linux-tk1-debian")
     endif()
 
     set(output_dtb_location "${CMAKE_CURRENT_BINARY_DIR}/linux/linux-dtb")
@@ -35,27 +40,28 @@ if("${KernelARMPlatform}" STREQUAL "tk1")
         DEPENDS ${device_tree_src}
     )
     # Create custom target for setting the dtb
-    add_custom_target(set_dtb DEPENDS "${output_dtb_location}")
-
-    # Add Linux VM images into file server
-    AddToFileServer("linux" "${linux_binary_name}")
-    AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS set_dtb)
+    add_custom_target(dtb_gen_target DEPENDS "${linux-dtb}")
 
 elseif("${KernelARMPlatform}" STREQUAL "tx1")
     set(cpp_flags "-DKERNELARMPLATFORM_TX1")
 
-    AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/tx1/linux")
-    AddToFileServer("linux-dtb" "${CAMKES_VM_IMAGES_DIR}/tx1/linux-dtb")
+    # kernel image contains rootfs
+    set(linux_image "${CAMKES_VM_IMAGES_DIR}/tx1/linux")
+
+    # There is no need to generate or modify a DTB, so we just have a dummy
+    # target here. The target is depends on the (existing) DTB file, so we get a
+    # nice error here in case it is missing.
+    set(output_dtb_location "${CAMKES_VM_IMAGES_DIR}/tx1/linux-dtb")
+    add_custom_target(dtb_gen_target DEPENDS "${output_dtb_location}")
 
 elseif("${KernelARMPlatform}" STREQUAL "exynos5422")
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_EXYNOS5422")
 
-    AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/exynos5422/linux")
+    set(linux_image "${CAMKES_VM_IMAGES_DIR}/exynos5422/linux")
     # Generate overlayed rootfs
     set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/exynos5422/rootfs.cpio.gz")
-    AddToFileServer("linux-initrd" ${rootfs_file})
     # Updated dtb based on initrd
     UpdateDtbFromInitrd(
         "${CAMKES_VM_IMAGES_DIR}/exynos5422/linux-dtb"
@@ -64,16 +70,14 @@ elseif("${KernelARMPlatform}" STREQUAL "exynos5422")
         dtb_gen_target
         output_dtb_location
     )
-    AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS dtb_gen_target)
 
 elseif("${KernelARMPlatform}" STREQUAL "tx2")
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_TX2")
 
-    AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/tx2/linux")
+    set(linux_image "${CAMKES_VM_IMAGES_DIR}/tx2/linux")
     set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/tx2/rootfs.cpio.gz")
-    AddToFileServer("linux-initrd" ${rootfs_file})
     # Updated dtb based on initrd
     UpdateDtbFromInitrd(
         "${CAMKES_VM_IMAGES_DIR}/tx2/linux-dtb"
@@ -82,16 +86,14 @@ elseif("${KernelARMPlatform}" STREQUAL "tx2")
         dtb_gen_target
         output_dtb_location
     )
-    AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS dtb_gen_target)
 
 elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_QEMU-ARM-VIRT")
 
-    AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/linux")
+    set(linux_image "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/linux")
     set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/rootfs.cpio.gz")
-    AddToFileServer("linux-initrd" ${rootfs_file})
     # Updated dtb based on initrd
     UpdateDtbFromInitrd(
         "${CAMKES_VM_IMAGES_DIR}/qemu-arm-virt/linux-dtb"
@@ -100,7 +102,6 @@ elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
         dtb_gen_target
         output_dtb_location
     )
-    AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS dtb_gen_target)
     include(simulation)
     set(SIMULATION ON CACHE BOOL "Generate simulation script to run qemu with the proper arguments")
     if(SIMULATION)
@@ -116,9 +117,8 @@ elseif("${KernelARMPlatform}" STREQUAL "odroidc2")
         CAMKES_ROOT_DTB_FILE_PATH "${CAMKES_VM_IMAGES_DIR}/odroidc2/camkes-linux-dtb"
         CACHE STRING ""
     )
-    AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/odroidc2/linux")
+    set(linux_image "${CAMKES_VM_IMAGES_DIR}/odroidc2/linux")
     set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/odroidc2/rootfs.cpio.gz")
-    AddToFileServer("linux-initrd" ${rootfs_file})
     # Updated dtb based on initrd
     UpdateDtbFromInitrd(
         "${CAMKES_VM_IMAGES_DIR}/odroidc2/linux-dtb"
@@ -127,12 +127,16 @@ elseif("${KernelARMPlatform}" STREQUAL "odroidc2")
         dtb_gen_target
         output_dtb_location
     )
-    AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS dtb_gen_target)
 endif()
 
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB Tk1DeviceFwd Tk1Insecure)
 
-DefineCAmkESVMFileServer()
+set(cpio_files "linux:${linux_image}" "linux-dtb:${output_dtb_location}")
+if(rootfs_file)
+    list(APPEND cpio_files "linux-initrd:${rootfs_file}")
+endif()
+
+DefineCAmkESVMFileServer(FILES ${cpio_files} DEPENDS dtb_gen_target)
 
 CAmkESAddImportPath(${KernelARMPlatform})
 

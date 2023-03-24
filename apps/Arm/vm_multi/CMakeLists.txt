@@ -73,24 +73,17 @@ AddOverlayDirToRootfs(
     GZIP
 )
 
-AddToFileServer(
-    "linux-initrd-vm0"
-    "${vm0_output_overlayed_rootfs_location}"
-    DEPENDS
-    rootfs_target_vm0
-)
-AddToFileServer(
-    "linux-initrd-vm-client"
-    "${client_output_overlayed_rootfs_location}"
-    DEPENDS
-    rootfs_target_client_vm
-)
-
-AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux")
-
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB VmVchan Tk1DeviceFwd Tk1Insecure)
 
-DefineCAmkESVMFileServer()
+DefineCAmkESVMFileServer(
+    FILES
+    "linux-initrd-vm0:${vm0_output_overlayed_rootfs_location}"
+    "linux-initrd-vm-client:${client_output_overlayed_rootfs_location}"
+    "linux:${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux"
+    DEPENDS
+    rootfs_target_vm0
+    rootfs_target_client_vm
+)
 
 CAmkESAddImportPath(${KernelARMPlatform})
 
