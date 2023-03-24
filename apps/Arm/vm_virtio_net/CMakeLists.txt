@@ -26,6 +26,9 @@ elseif("${KernelARMPlatform}" STREQUAL "tx2")
     set(rootfs_address "0xf7000000")
     set(dtb_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux-pci-dtb")
     set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/rootfs_crossvm.cpio.gz")
+
+else()
+    message(FATAL_ERROR "unsupported platform")
 endif()
 
 # Generate overlayed rootfs

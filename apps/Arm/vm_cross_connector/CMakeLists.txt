@@ -34,6 +34,8 @@ elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
     if(SIMULATION)
         GenerateSimulateScript()
     endif()
+else()
+    message(FATAL_ERROR "unsupported platform")
 endif()
 
 if(BUILD_CROSSVM)

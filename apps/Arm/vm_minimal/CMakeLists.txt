@@ -124,6 +124,9 @@ elseif("${KernelARMPlatform}" STREQUAL "odroidc2")
         dtb_gen_target
         output_dtb_location
     )
+
+else()
+    message(FATAL_ERROR "unsupported platform")
 endif()
 
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB Tk1DeviceFwd Tk1Insecure)

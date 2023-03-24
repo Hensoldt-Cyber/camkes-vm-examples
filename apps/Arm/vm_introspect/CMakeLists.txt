@@ -52,6 +52,8 @@ elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
         GenerateSimulateScript()
     endif()
 
+else()
+    message(FATAL_ERROR "unsupported platform")
 endif()
 
 set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/rootfs_crossvm.cpio.gz")
