@@ -39,20 +39,16 @@ if("${KernelARMPlatform}" STREQUAL "tk1")
         VERBATIM
         DEPENDS ${device_tree_src}
     )
-    # Create custom target for setting the dtb
-    add_custom_target(dtb_gen_target DEPENDS "${linux-dtb}")
+    # There is no need to create an explicit target there, any step that uses
+    # 'output_dtb_location' and lists it properly as dependency will make CMake
+    # run the command above to create (or update) it.
 
 elseif("${KernelARMPlatform}" STREQUAL "tx1")
     set(cpp_flags "-DKERNELARMPLATFORM_TX1")
 
     # kernel image contains rootfs
     set(linux_image "${CAMKES_VM_IMAGES_DIR}/tx1/linux")
-
-    # There is no need to generate or modify a DTB, so we just have a dummy
-    # target here. The target is depends on the (existing) DTB file, so we get a
-    # nice error here in case it is missing.
     set(output_dtb_location "${CAMKES_VM_IMAGES_DIR}/tx1/linux-dtb")
-    add_custom_target(dtb_gen_target DEPENDS "${output_dtb_location}")
 
 elseif("${KernelARMPlatform}" STREQUAL "exynos5422")
     find_package(camkes-vm-linux REQUIRED)
@@ -131,12 +127,15 @@ endif()
 
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB Tk1DeviceFwd Tk1Insecure)
 
+# Generate the File Server. There is no need to list 'dtb_gen_target' as
+# explicit dependency, because we we depend on the file `output_dtb_location`
+# anyway.
 set(cpio_files "linux:${linux_image}" "linux-dtb:${output_dtb_location}")
 if(rootfs_file)
     list(APPEND cpio_files "linux-initrd:${rootfs_file}")
 endif()
 
-DefineCAmkESVMFileServer(FILES ${cpio_files} DEPENDS dtb_gen_target)
+DefineCAmkESVMFileServer(FILES ${cpio_files})
 
 CAmkESAddImportPath(${KernelARMPlatform})
 

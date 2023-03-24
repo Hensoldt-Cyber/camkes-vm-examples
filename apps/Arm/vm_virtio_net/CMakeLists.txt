@@ -62,15 +62,14 @@ AddOverlayDirToRootfs(
     GZIP
 )
 
-# Updated dtb based on generated initrd
+# Updated dtb based on generated initrd. 'output_overlayed_rootfs_location' is
+# taken as input, there there is an implicit dependency  This implicitly depends on
 UpdateDtbFromInitrd(
     ${dtb_file}
     ${output_overlayed_rootfs_location}
     ${rootfs_address}
     dtb_gen_target
     output_dtb_location
-    DEPENDS
-    rootfs_target
 )
 
 AddCamkesCPPFlag(

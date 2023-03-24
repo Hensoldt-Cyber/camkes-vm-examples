@@ -117,12 +117,11 @@ AddCamkesCPPFlag(
     VmVirtioNetVirtqueue
 )
 
+# There is an implicit dependency on ' output_overlayed_rootfs_location', so
+# there is no need to explicitly depend on 'rootfs_target'.
 DefineCAmkESVMFileServer(
-    FILES
-    "linux:${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux"
+    FILES "linux:${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux"
     "linux-initrd:${output_overlayed_rootfs_location}"
-    DEPENDS
-    rootfs_target
 )
 
 CAmkESAddImportPath(${KernelARMPlatform})
