@@ -15,7 +15,7 @@ include(${CAMKES_ARM_VM_HELPERS_PATH})
 set(rootfs_file "")
 
 # Create our CPP Flags based on ARM VM config variables
-if("${KernelARMPlatform}" STREQUAL "tk1")
+if(KernelPlatformTK1)
     set(cpp_flags "-DKERNELARMPLATFORM_TK1")
 
     # Different device tree if compiling with Tk1Insecure
@@ -44,14 +44,14 @@ if("${KernelARMPlatform}" STREQUAL "tk1")
     # 'output_dtb_location' and lists it properly as dependency will make CMake
     # run the command above to create (or update) it.
 
-elseif("${KernelARMPlatform}" STREQUAL "tx1")
+elseif(KernelPlatformTx1)
     set(cpp_flags "-DKERNELARMPLATFORM_TX1")
 
     # kernel image contains rootfs
     set(linux_image "${CAMKES_VM_IMAGES_DIR}/tx1/linux")
     set(output_dtb_location "${CAMKES_VM_IMAGES_DIR}/tx1/linux-dtb")
 
-elseif("${KernelARMPlatform}" STREQUAL "exynos5422")
+elseif(KernelPlatformExynos5422)
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_EXYNOS5422")
@@ -68,7 +68,7 @@ elseif("${KernelARMPlatform}" STREQUAL "exynos5422")
         output_dtb_location
     )
 
-elseif("${KernelARMPlatform}" STREQUAL "tx2")
+elseif(KernelPlatformTx2)
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_TX2")
@@ -84,7 +84,7 @@ elseif("${KernelARMPlatform}" STREQUAL "tx2")
         output_dtb_location
     )
 
-elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
+elseif(KernelPlatformQEMUArmVirt)
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_QEMU-ARM-VIRT")
@@ -105,7 +105,7 @@ elseif("${KernelARMPlatform}" STREQUAL "qemu-arm-virt")
         GenerateSimulateScript()
     endif()
 
-elseif("${KernelARMPlatform}" STREQUAL "odroidc2")
+elseif(KernelPlatformOdroidc2)
     find_package(camkes-vm-linux REQUIRED)
     include(${CAMKES_VM_LINUX_HELPERS_PATH})
     set(cpp_flags "-DKERNELARMPLATFORM_ODROIDC2")
