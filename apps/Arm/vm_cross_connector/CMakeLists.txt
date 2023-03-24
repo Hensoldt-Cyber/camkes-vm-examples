@@ -13,7 +13,6 @@ find_package(camkes-vm-linux REQUIRED)
 include(${CAMKES_VM_LINUX_HELPERS_PATH})
 include(${CAMKES_VM_LINUX_MODULE_HELPERS_PATH})
 include(${CAMKES_VM_LINUX_SOURCE_HELPERS_PATH})
-include(${CAMKES_VM_LINUX_MODULE_HELPERS_PATH})
 include(ExternalProject)
 include(external-project-helpers)
 
