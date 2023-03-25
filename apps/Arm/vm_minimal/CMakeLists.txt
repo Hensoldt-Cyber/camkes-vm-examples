@@ -16,30 +16,30 @@ if("${KernelARMPlatform}" STREQUAL "tk1")
 
     # Different device tree if compiling with Tk1Insecure
     if(Tk1Insecure)
-        set(device_tree_src "linux-tk1-nonsecured.dts")
+        set(device_tree_src "${CAMKES_ARM_LINUX_DIR}/linux-tk1-nonsecured.dts")
     else()
-        set(device_tree_src "linux-tk1-secure.dts")
+        set(device_tree_src "${CAMKES_ARM_LINUX_DIR}/linux-tk1-secure.dts")
     endif()
 
     if(VmTk1InitrdRootfs)
-        set(linux_binary_name "linux-tk1-initrd")
+        set(linux_binary_name "${CAMKES_ARM_LINUX_DIR}/linux-tk1-initrd")
     else()
-        set(linux_binary_name "linux-tk1-debian")
+        set(linux_binary_name "${CAMKES_ARM_LINUX_DIR}/linux-tk1-debian")
     endif()
+
+    set(output_dtb_location "${CMAKE_CURRENT_BINARY_DIR}/linux/linux-dtb")
     add_custom_command(
-        OUTPUT linux/linux-dtb
-        COMMAND
-            bash -c
-            "which dtc && dtc -I dts -O dtb ${CAMKES_ARM_LINUX_DIR}/${device_tree_src} > linux/linux-dtb"
+        OUTPUT "${output_dtb_location}"
+        COMMAND bash -c "which dtc && dtc -I dts -O dtb ${device_tree_src} > ${output_dtb_location}"
         VERBATIM
-        DEPENDS ${CAMKES_ARM_LINUX_DIR}/${device_tree_src}
+        DEPENDS ${device_tree_src}
     )
     # Create custom target for setting the dtb
-    add_custom_target(set_dtb DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/linux/linux-dtb")
+    add_custom_target(set_dtb DEPENDS "${output_dtb_location}")
 
     # Add Linux VM images into file server
-    AddToFileServer("linux" "${CAMKES_ARM_LINUX_DIR}/${linux_binary_name}")
-    AddToFileServer("linux-dtb" "${CMAKE_CURRENT_BINARY_DIR}/linux/linux-dtb" DEPENDS set_dtb)
+    AddToFileServer("linux" "${linux_binary_name}")
+    AddToFileServer("linux-dtb" "${output_dtb_location}" DEPENDS set_dtb)
 
 elseif("${KernelARMPlatform}" STREQUAL "tx1")
     set(cpp_flags "-DKERNELARMPLATFORM_TX1")
